@@ -1,0 +1,98 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<ctype.h>
+
+struct QueueNode;
+typedef struct QueueNode *PtrToQueueNode;
+typedef PtrToQueueNode Node;
+typedef int ElementType;
+
+
+struct QueueNode
+{
+    ElementType Element;
+    Node Next;
+};
+
+typedef struct
+{
+    Node Front;
+    Node Rear;
+}LinkQueue;
+typedef LinkQueue *Queue;
+
+void InitQueue(Queue Q)
+{
+    Q->Front = malloc(sizeof(struct QueueNode));
+    Q->Rear = malloc(sizeof(struct QueueNode));
+    Q->Front->Next = Q->Rear->Next;
+    if(Q->Front == NULL)
+        exit(0);
+    Q->Rear->Next = NULL;
+}
+
+int IsEmpty(Queue Q)
+{
+    return Q->Rear->Next == NULL;
+}
+
+void Enqueue(Queue Q, ElementType X)
+{
+    Node TmpCell = malloc(sizeof(struct QueueNode));
+    TmpCell->Element = X;
+    if(IsEmpty(Q)) {
+        Q->Rear->Next = Q->Front->Next = TmpCell;
+        TmpCell->Next = NULL;
+    }
+    else {
+        Q->Rear->Next->Next = TmpCell;
+        Q->Rear->Next = TmpCell;
+        TmpCell->Next = NULL;
+    }
+}
+
+ElementType Dequeue(Queue Q)
+{
+    Node TmpCell;
+    if(!IsEmpty(Q))
+    {
+        TmpCell = Q->Front->Next;
+        ElementType X = TmpCell->Element;
+        Q->Front->Next = TmpCell->Next;
+        free(TmpCell);
+        return X;
+    }
+    else
+    {
+        printf("Empty Queue!");
+        exit(0);
+    }
+}
+
+void Traversal(Queue Q)
+{
+    Node TmpCell;
+    TmpCell = Q->Front->Next;
+    while(TmpCell != NULL)
+    {
+        printf("%d,", TmpCell->Element);
+        TmpCell = TmpCell->Next;
+    }
+}
+
+int main()
+{
+    Queue Q = malloc(sizeof(LinkQueue));
+    InitQueue(Q);
+    int array[6] = {1, 1, 2, 3, 5, 8};
+    for(int i = 0; i < 6; i++)
+        Enqueue(Q, array[i]);
+    printf("Enqueue 1,1,2,3,5,8 :\n");
+    Traversal(Q);
+    printf("\n");
+    printf("Dequeue 3 times:\n");
+    for(int i = 0; i < 3; i++)
+        Dequeue(Q);
+    Traversal(Q);
+    return 0;
+}
