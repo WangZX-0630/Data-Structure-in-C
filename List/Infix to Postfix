@@ -1,0 +1,301 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<ctype.h>
+
+typedef struct node *pnode;
+typedef pnode Stack;
+typedef struct node
+{
+    char elem;
+    float sum;
+    pnode next;
+}node;
+
+int IsEmpty(Stack S)
+{
+    return S->next==NULL;
+}
+
+void Pop(Stack S)
+{
+    pnode firstcell;
+    if(IsEmpty(S))
+    {
+        printf("Empty Stack");
+        getchar();
+    }
+    else
+    {
+        firstcell=S->next;
+        S->next=firstcell->next;
+        free(firstcell);
+    }
+}
+
+void MakeEmpty(Stack S)
+{
+    if(S==NULL)
+        printf("Use CreateStack First!!!");
+    else
+    {
+        while(!IsEmpty(S))
+            Pop(S);
+    }
+}
+
+
+Stack CreateStack (void)
+{
+    Stack S;
+    S=malloc(sizeof(struct node));
+    if(S==NULL)
+        printf("Out of Space!");
+    S->next=NULL;
+    MakeEmpty(S);
+    return S;
+}
+
+void Push(char ch,Stack S)
+{
+    pnode tmpcell;
+    tmpcell=malloc(sizeof(struct node));
+    if(tmpcell==NULL)
+        printf("Out of Space");
+    else
+    {
+        tmpcell->elem=ch;
+        tmpcell->next=S->next;
+        S->next=tmpcell;
+    }
+}
+
+void Push1(float s,Stack S)
+{
+    pnode tmpcell;
+    tmpcell=malloc(sizeof(struct node));
+    if(tmpcell==NULL)
+        printf("Out of Space");
+    else
+    {
+        tmpcell->sum=s;
+        tmpcell->next=S->next;
+        S->next=tmpcell;
+    }
+}
+
+
+char Top(Stack S)
+{
+    if(!IsEmpty(S))
+        return S->next->elem;
+    else
+    {
+        printf("Empty Stack");
+        return 0;
+    }
+}
+
+float Top1(Stack S)
+{
+    if(!IsEmpty(S))
+        return S->next->sum;
+    else
+    {
+        printf("Empty Stack");
+        return 0;
+    }
+}
+
+
+
+void Change(Stack S,char str[])
+{
+    int i=0;
+    char e;
+    while(str[i]!='\0')
+    {
+        while(isdigit(str[i]))
+        {
+            printf("%c",str[i++]);
+            if(!isdigit(str[i]))
+                printf(" ");
+        }
+        if(str[i]=='+'||str[i]=='-')
+        {
+            if(IsEmpty(S))
+                Push(str[i],S);
+            else
+            {
+                do{
+                    e=Top(S);
+                    Pop(S);
+                    if(e=='(')
+                        Push(e,S);
+                    else
+                        printf("%c ",e);
+                }while( !IsEmpty(S) && e != '(' );
+                Push(str[i],S);
+            }
+        }
+        else if(str[i]==')')
+        {
+            e=Top(S);
+            Pop(S);
+            while(e!='(')
+            {
+                printf("%c ",e);
+                e=Top(S);
+                Pop(S);
+            }
+        }
+        else if(str[i]=='*'||str[i]=='/'||str[i]=='(')
+            Push(str[i],S);
+        else if(str[i]=='\0')
+            break;
+        else
+        {
+            printf("\n输入格式错误！\n");
+            return ;
+        }
+        i++;
+    }
+    while(!IsEmpty(S))
+    {
+        e=Top(S);
+        Pop(S);
+        printf("%c ",e);
+    }
+}
+
+
+int main()
+{
+    char str[50];
+    Stack S,S1;
+    float s=0,sum=0;
+
+    S=CreateStack();
+    S1=CreateStack();
+    gets(str);
+
+    int i=0;
+    char e;
+    float f,g;
+    while(str[i]!='\0')
+    {
+        while(isdigit(str[i]))
+        {
+            f=(float)(str[i])-48;
+            Push1(f,S1);
+            i++;
+        }
+        if(str[i]=='+'||str[i]=='-')
+        {
+            if(IsEmpty(S))
+                Push(str[i],S);
+            else
+            {
+                do
+                {
+                    e=Top(S);
+                    Pop(S);
+                    if(e=='(')
+                        Push(e,S);
+                    else
+                    {
+                        f=Top1(S1);
+                        Pop(S1);
+                        g=Top1(S1);
+                        Pop(S1);
+                        switch(e){
+                            case '+':
+                                sum = f + g;
+                                break;
+                            case '-':
+                                sum = g - f;
+                                break;
+                            case '*':
+                                sum = g * f;
+                                break;
+                            case '/':
+                                sum = g / f;
+                                break;
+                        }
+                        Push1(sum, S1);
+                    }
+                }while( !IsEmpty(S) && e != '(' );
+
+                Push(str[i],S);
+            }
+        }
+        else if(str[i]==')')
+        {
+            e=Top(S);
+            Pop(S);
+            while(e!='(')
+            {
+                f=Top1(S1);
+                Pop(S1);
+                g=Top1(S1);
+                Pop(S1);
+                switch(e){
+                    case '+':
+                        sum = f + g;
+                        break;
+                    case '-':
+                        sum = g - f;
+                        break;
+                    case '*':
+                        sum = g * f;
+                        break;
+                    case '/':
+                        sum = g / f;
+                        break;
+                }
+                Push1(sum, S1);
+                e=Top(S);
+                Pop(S);
+            }
+        }
+        else if(str[i]=='*'||str[i]=='/'||str[i]=='(')
+            Push(str[i],S);
+        else if(str[i]=='\0')
+            break;
+        else
+        {
+            printf("\n输入格式错误！\n");
+            return 0;
+        }
+        i++;
+    }
+
+    while(!IsEmpty(S))
+    {
+        e=Top(S);
+        Pop(S);
+        f=Top1(S1);
+        Pop(S1);
+        g=Top1(S1);
+        Pop(S1);
+        switch(e){
+            case '+':
+                sum = f + g;
+                break;
+            case '-':
+                sum = g - f;
+                break;
+            case '*':
+                sum = g * f;
+                break;
+            case '/':
+                sum = g / f;
+                break;
+        }
+        Push1(sum, S1);
+    }
+    s=Top1(S1);
+    printf("%.2f\n",s);
+    Change(S, str);
+    return 0;
+}
+
