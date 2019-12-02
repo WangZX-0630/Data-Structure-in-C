@@ -1,1 +1,150 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Node;
+typedef struct Node* PtrToNode;
+typedef PtrToNode List;
+typedef PtrToNode Position;
+typedef int ElementType;
+
+int IsEmpty(List L);
+List MakeEmpty(List L);
+int IsLast(Position P, List L);
+Position Find(ElementType X, List L);
+void Delete(ElementType X, List L);
+Position FindPrevious(ElementType X, List L);
+void Insert(ElementType X, List L, Position P);
+void TailInsert(ElementType X, List L);
+void DeleteList(List L);
+
+struct Node
+{
+    ElementType  Element;
+    Position Next;
+};
+
+int IsEmpty(List L)
+{
+    return L->Next == NULL;
+}
+
+List MakeEmpty(List L)
+{
+    if(L->Next == NULL)
+        return L;
+    L->Next = NULL;
+    return L;
+}
+
+int IsLast(Position P, List L)
+{
+    return P->Next == NULL;
+}
+
+Position Find(ElementType X, List L)
+{
+    Position P;
+    P = L->Next;
+    while(P != NULL && P->Element != X)
+        P = P->Next;
+    return P;
+}
+
+Position FindPrevious(ElementType X, List L)
+{
+    Position P;
+    P = L -> Next;
+    while(P->Next != NULL && P->Next->Element != X)
+        P = P->Next;
+    return P;
+}
+
+void Delete(ElementType X, List L)
+{
+    Position P = FindPrevious(X, L);
+    Position TmpCell;
+    if(!IsLast(P, L))                    /* Assumption of header use */
+    {                                    /* X is found and delete it */
+        TmpCell = P->Next;
+        P->Next = TmpCell->Next;
+        free(TmpCell);
+    }
+}
+
+void Insert(ElementType X, List L, Position P)
+{
+    Position TmpCell;
+    TmpCell = malloc(sizeof(struct Node));
+    TmpCell->Element = X;
+    TmpCell->Next = P->Next;
+    P->Next = TmpCell;
+}
+
+void TailInsert(ElementType X, List L)
+{
+    Position TmpCell;
+    Position P = L;
+    TmpCell = malloc(sizeof(struct Node));
+    while(P->Next != NULL)
+        P = P->Next;
+    TmpCell->Element = X;
+    TmpCell->Next = NULL;
+    P->Next = TmpCell;
+}
+
+void DeleteList(List L)
+{
+    Position P, Tmp;
+    P = L->Next;
+    L->Next = NULL;
+    while(P != NULL)
+    {
+        Tmp = P->Next;
+        free(P);
+        P = Tmp;
+    }
+}
+
+void PrintList(List L)
+{
+    Position P = L->Next;
+    while(P != NULL)
+    {
+        printf("%d,", P->Element);
+        P = P->Next;
+    }
+}
+
+
+int main()
+{
+    List L;
+    L = malloc(sizeof(struct Node));
+    L->Next = NULL;
+    int array[6] = {1, 1, 2, 3, 5, 13};
+    int i;
+    printf("TailInsert 1,1,2,3,5,13 one by one: \n");
+    for(i = 0; i < 6; i++)
+    {
+        TailInsert(array[i], L);
+    }
+    PrintList(L);
+    printf("\n");
+    
+    Position P = Find(5, L);
+    printf("Insert 8 after 5: \n");
+    Insert(8, L, P);
+    PrintList(L);
+    printf("\n");
+    
+    printf("Delete 3: \n");
+    Delete(3, L);
+    PrintList(L);
+    printf("\n");
+
+    return 0;
+}
+
+
 
