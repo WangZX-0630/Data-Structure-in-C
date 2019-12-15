@@ -1,0 +1,212 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct TreeNode;
+typedef struct TreeNode *Position;
+typedef struct TreeNode *SearchTree;
+
+struct TreeNode {
+    int element;
+    Position left;
+    Position right;
+};
+
+typedef struct QueueNode *QNode;
+struct QueueNode {
+    Position element;
+    QNode next;
+};
+
+struct QueueList {
+    QNode head;
+    QNode rear;
+};
+typedef struct QueueList *Queue;
+
+int IsEmpty(Queue Q) {
+    return Q->head->next == NULL;
+}
+
+Queue InitQueue(void) {
+    Queue Q;
+    Q = malloc(sizeof(struct QueueList));
+    Q->head = malloc(sizeof(struct QueueNode));
+    Q->rear = malloc(sizeof(struct QueueNode));
+    Q->head->next = Q->rear->next = NULL;
+    return Q;
+}
+
+void EnQueue(Position X, Queue Q) {
+    QNode TmpCell;
+    TmpCell = malloc(sizeof(struct QueueNode));
+    TmpCell->element = X;
+    TmpCell->next = NULL;
+    if(IsEmpty(Q)) {
+        Q->head->next = Q->rear->next = TmpCell;
+    }
+    else {
+        Q->rear->next->next = TmpCell;
+        Q->rear->next = TmpCell;
+    }
+}
+
+Position DeQueue(Queue Q) {
+    if(!IsEmpty(Q)) {
+        QNode TmpCell;
+        TmpCell = Q->head->next;
+        Position Value = TmpCell->element;
+        if(TmpCell->next == NULL) {
+            Q->head->next = Q->rear->next = NULL;
+        }
+        else {
+            Q->head->next = TmpCell->next;
+        }
+        free(TmpCell);
+        return Value;
+    }
+    else return 0;
+}
+
+SearchTree MakeEmpty(SearchTree T) {
+    if(T != NULL) {
+        MakeEmpty(T->left);
+        MakeEmpty(T->right);
+        free(T);
+    }
+    return NULL;
+}
+
+Position Find(int X, SearchTree T) {
+    if(T == NULL) {
+        return NULL;
+    }
+    else if(X < T->element) {
+        return Find(X, T->left);
+    }
+    else if(X > T->element) {
+        return Find(X, T->right);
+    }
+    else return T;
+}
+
+
+Position FindMin(SearchTree T) {
+    if(T == NULL) {
+        return NULL;
+    }
+    else if(T->left != NULL) {
+        return FindMin(T->left);
+    }
+    else return T;
+}
+
+Position FindMax(SearchTree T) {
+    if(T == NULL) {
+        return NULL;
+    }
+    else if(T->right != NULL) {
+        return FindMax(T->right);
+    }
+    else return T;
+}
+
+SearchTree Insert(int X, SearchTree T) {
+    if(T == NULL) {
+        T = malloc(sizeof(struct TreeNode));
+        T->element = X;
+        T->left = T->right = NULL;
+    }
+    else if(X < T->element) {
+        T->left = Insert(X, T->left);
+    }
+    else if(X > T->element) {
+        T->right = Insert(X, T->right);
+    }
+    return T;
+}
+
+SearchTree Delete(int X, SearchTree T) {
+    Position TmpCell;
+    if(T == NULL) {
+        return NULL;
+    }
+    else if(X < T->element) {
+        T->left =  Delete(X, T->left);
+    }
+    else if(X > T->element) {
+        T->right = Delete(X, T->right);
+    }
+    else {
+        if(T->left && T->right) {
+            TmpCell = FindMax(T->left);
+            T->element = TmpCell->element;
+            free(TmpCell);
+        }
+        else {
+            TmpCell = T;
+            if(T->left == NULL) {
+                T = T->right;
+            }
+            else if(T->right == NULL) {
+                T = T->left;
+            }
+            free(TmpCell);
+        }
+    }
+    return T;
+}
+
+int Power(int a, int b) {
+    if(b == 0) {
+        return 1;
+    }
+    else {
+        int value = a;
+        for(int i = 1; i < b; i++) {
+            a = a * value;
+        }
+        return a;
+    }
+}
+
+void LevelTraversal(SearchTree T) {
+    Queue Q;
+    int Array[20] = {0};
+    Q = InitQueue();
+    EnQueue(T, Q);
+    int i = 0;
+    while(!IsEmpty(Q)) {
+        Position TmpCell;
+        TmpCell = DeQueue(Q);
+        Array[i] = TmpCell->element;
+        if(TmpCell->left != NULL) {
+            EnQueue(TmpCell->left, Q);
+        }
+        if(TmpCell->right != NULL) {
+            EnQueue(TmpCell->right, Q);
+        }
+        i++;
+    }
+    int k = 1;
+    for(int j = 0; j < 20 ; j++) {
+        if(Array[j] != 0) {
+            printf("%d, ",Array[j]);
+        }
+        if(j == Power(2, k) - 2) {
+            printf("\n");
+            k++;
+        }
+    }
+}
+
+int main()
+{
+    SearchTree T = NULL;
+    int InsertNum[10] = {32, 3, 56, 4, 75, 53, 33, 76, 90, 2};
+    for(int i = 0; i < 10; i++) {
+        T = Insert(InsertNum[i], T);
+    }
+    LevelTraversal(T);
+    
+    return 0;
+}
