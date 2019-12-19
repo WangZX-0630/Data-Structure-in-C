@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct HashTbl;
+struct HashEntry;
+
+typedef struct HashTbl *HashTable;
+typedef struct HashEntry *Cell;
+
+typedef unsigned int Index;
+typedef Index Position;
+typedef int ElementType;
+
+enum KindOfEntry { Legitimate = 1, Empty = 2, Deleted = 3 };
+
+struct HashEntry {
+    ElementType element;
+    enum KindOfEntry Info;
+};
+
+struct HashTbl {
+    int TableSize;
+    Cell *TheCells;
+};
+
+Index Hash(int X, int TableSize) {
+    return (X % TableSize);
+}
+
+HashTable InitializeTable(int TableSize) {
+    HashTable H;
+    H = malloc(sizeof(struct HashTbl));
+    H->TableSize = TableSize;
+    H->TheCells = malloc(sizeof(Cell) * H->TableSize);
+    for(int i = 0; i < H->TableSize; i++) {
+        H->TheCells[i] = malloc(sizeof(struct HashEntry));
+        H->TheCells[i]->element = 0;
+        H->TheCells[i]->Info = Empty;
+    }
+    return H;
+}
+
+Position Find(HashTable H, ElementType X) {
+    Position Pos;
+    Pos = Hash(X, H->TableSize);
+    int i = 0;
+    while(H->TheCells[Pos]->element != X && H->TheCells[Pos]->Info != Empty) {
+        Pos = Hash(X + i * i, H->TableSize);
+        ++i;
+    }
+    return Pos;
+}
+
+void Insert(HashTable H, ElementType X) {
+    Position Pos;
+    Pos = Find(H, X);
+    H->TheCells[Pos]->element = X;
+    H->TheCells[Pos]->Info = Legitimate;
+}
+
+void PrintTable(HashTable H) {
+    for(int i = 0; i < H->TableSize; i++) {
+        printf("%d: %d, %u\n",i, H->TheCells[i]->element, H->TheCells[i]->Info);
+    }
+}
+
+void test(HashTable H) {
+    int array[5] = {89, 18, 49, 58, 69};
+    for(int i = 0; i < 5; i++) {
+        Insert(H, array[i]);
+    }
+    PrintTable(H);
+}
+
+
+int main()
+{
+    HashTable H;
+    H = InitializeTable(10);
+    test(H);
+    return 0;
+}
+
