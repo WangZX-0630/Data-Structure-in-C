@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct ListNode;
+typedef struct ListNode *Position;
+typedef Position List;
+
+struct HashTbl;
+typedef struct HashTbl *HashTable;
+
+typedef unsigned int Index;
+
+
+struct ListNode {
+    int element;
+    Position next;
+};
+
+struct HashTbl {
+    int TableSize;
+    List *TheLists;
+};
+
+Index Hash(const int Key, int TableSize) {
+    return Key % TableSize;
+}
+
+HashTable InitializeTable(int TableSize) {
+    HashTable H;
+    H = malloc(sizeof(struct HashTbl));
+    H->TableSize = TableSize;
+    H->TheLists = malloc(sizeof(List) * TableSize);
+    
+    for(int i = 0; i < H->TableSize; i++) {
+        H->TheLists[i] = malloc(sizeof(struct ListNode));
+        H->TheLists[i]->next = NULL;
+    }
+    return H;
+}
+
+Position Find(int X, HashTable H) {
+    Position TmpCell;
+    TmpCell = H->TheLists[Hash(X, H->TableSize)];
+    while(TmpCell != NULL && TmpCell->element != X) {
+        TmpCell = TmpCell->next;
+    }
+    return TmpCell;
+}
+
+Position FindPrevious(int X, HashTable H) {
+    Position TmpCell;
+    TmpCell = H->TheLists[Hash(X, H->TableSize)];
+    while(TmpCell->next != NULL && TmpCell->next->element != X) {
+        TmpCell = TmpCell->next;
+    }
+    return TmpCell;
+}
+
+void Insert(int X, HashTable H) {
+    Position Pos, NewCell;
+    Pos = FindPrevious(X, H);
+    if(Pos->next == NULL) {
+        NewCell = malloc(sizeof(struct ListNode));
+        NewCell->element = X;
+        Pos->next = NewCell;
+        NewCell->next = NULL;
+    }
+}
+
+void Delete(int X, HashTable H) {
+    Position Pos;
+    Pos = FindPrevious(X, H);
+    if(Pos->next != NULL) {
+        Position TmpCell;
+        TmpCell = Pos->next;
+        Pos->next = TmpCell->next;
+        free(TmpCell);
+    }
+}
+
+void PrintTable(HashTable H) {
+    for(int i = 0; i < H->TableSize; i++) {
+        Position TmpCell;
+        TmpCell = H->TheLists[i]->next;
+        printf("%d: ", i);
+        while(TmpCell != NULL) {
+            printf("%d,",TmpCell->element);
+            TmpCell = TmpCell->next;
+        }
+        printf("\n");
+    }
+}
+
+void test(HashTable H) {
+    int array[10];
+    for(int i = 0; i < 10; i++) {
+        array[i] = i * i;
+        Insert(array[i], H);
+    }
+    PrintTable(H);
+}
+
+
+int main()
+{
+    HashTable H;
+    H = InitializeTable(10);
+    test(H);
+    
+    return 0;
+}
+
