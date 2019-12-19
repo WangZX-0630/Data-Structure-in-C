@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define MaxEleNum 50
+
+struct BinaryHeap;
+typedef struct BinaryHeap *Heap;
+typedef int ElementType;
+
+Heap InitializeHeap(int MaxElements);
+void Insert(ElementType X, Heap H);
+ElementType DeleteMin(Heap H);
+ElementType FindMin(Heap H);
+int IsEmpty(Heap H);
+int IsFull(Heap H);
+
+
+struct BinaryHeap {
+    int Capacity;
+    int Size;
+    ElementType *Elements;
+};
+
+Heap InitializeHeap(int MaxElement) {
+    Heap H;
+    H = malloc(sizeof(struct BinaryHeap));
+    H->Capacity = MaxElement;
+    H->Size = 0;
+    H->Elements = malloc((H->Capacity + 1) * sizeof(ElementType));
+    /* allocate the array plus one extra for sentinel */
+    H->Elements[0] = 0;
+    return H;
+}
+
+int IsEmpty(Heap H) {
+    return H->Size == 0;
+}
+int IsFull(Heap H) {
+    return H->Capacity == H->Size;
+}
+ElementType FindMin(Heap H) {
+    return H->Elements[1];
+}
+
+void Insert(ElementType X, Heap H) {
+    if(!IsFull(H)) {
+        int i = 0;
+        for(i = ++H->Size; H->Elements[i / 2] > X; i /= 2) {
+            H->Elements[i] = H->Elements[i / 2];
+        }
+        H->Elements[i] = X;
+    }
+}
+
+ElementType DeleteMin(Heap H) {
+    if(!IsEmpty(H)) {
+        ElementType Min = H->Elements[1];
+        H->Elements[0] = 0;
+        int Child, i;
+        for(i = 1; 2 * i <= H->Size; i = Child) {
+            Child = H->Elements[2 * i] < H->Elements[2 * i + 1] && 2 * i != H->Size ? 2 * i : 2 * i + 1;
+            if(H->Elements[H->Size] < H->Elements[Child]) {
+                break;
+            }
+            else {
+                H->Elements[i] = H->Elements[Child];
+            }
+        }
+        H->Elements[i] = H->Elements[H->Size];
+        --H->Size;
+        return Min;
+    }
+    else return H->Elements[0];
+}
+
+void PercolateDown(Heap H,int Index) {
+    ElementType TmpCell = H->Elements[Index];
+    int Child, i;
+    for(i = Index; 2 * i <= H->Size; i = Child) {
+        Child = H->Elements[2 * i] < H->Elements[2 * i + 1] && 2 * i != H->Size ? 2 * i : 2 * i + 1;
+        if(TmpCell < H->Elements[Child]) {
+            break;
+        }
+        else {
+            H->Elements[i] = H->Elements[Child];
+        }
+    }
+    H->Elements[i] = TmpCell;
+}
+
+Heap BuildHeap(int *array, int N) {
+    Heap H;
+    H = InitializeHeap(MaxEleNum);
+    for(int i = 1; i <= N; ++i) {
+        H->Elements[i] = array[i - 1];
+        ++H->Size;
+    }
+    for(int i = N / 2; i > 0; --i) {
+        PercolateDown(H, i);
+    }
+    return H;
+}
+
+void PrintHeap(Heap H) {
+    for(int i = 1; i < H->Size + 1; ++i) {
+        printf("%d,", H->Elements[i]);
+    }
+    printf("\n");
+}
+
+void test(Heap H) {
+    int array[15] = {10,12,1,14,6,5,8,15,3,9,7,4,11,13,2};
+    for(int i = 0; i < 15; ++i) {
+        Insert(array[i], H);
+    }
+    PrintHeap(H);
+    
+    for(int i = 0; i < 5; ++i) {
+        DeleteMin(H);
+    }
+    PrintHeap(H);
+    
+    Heap H2 = BuildHeap(array, 15);
+    PrintHeap(H2);
+}
+
+
+int main()
+{
+    Heap H;
+    H = InitializeHeap(MaxEleNum);
+    test(H);
+    return 0;
+}
