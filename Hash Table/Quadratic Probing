@@ -14,6 +14,13 @@ typedef int ElementType;
 
 enum KindOfEntry { Legitimate = 1, Empty = 2, Deleted = 3 };
 
+HashTable InitializeTable(int TableSize);
+Index Hash(int X, int TableSize);
+HashTable Insert(HashTable H, ElementType X);
+Position Find(HashTable H, ElementType X);
+HashTable Rehash(HashTable H);
+
+
 struct HashEntry {
     ElementType element;
     enum KindOfEntry Info;
@@ -21,6 +28,7 @@ struct HashEntry {
 
 struct HashTbl {
     int TableSize;
+    int ElementAmount;
     Cell *TheCells;
 };
 
@@ -32,6 +40,7 @@ HashTable InitializeTable(int TableSize) {
     HashTable H;
     H = malloc(sizeof(struct HashTbl));
     H->TableSize = TableSize;
+    H->ElementAmount = 0;
     H->TheCells = malloc(sizeof(Cell) * H->TableSize);
     for(int i = 0; i < H->TableSize; i++) {
         H->TheCells[i] = malloc(sizeof(struct HashEntry));
@@ -52,12 +61,33 @@ Position Find(HashTable H, ElementType X) {
     return Pos;
 }
 
-void Insert(HashTable H, ElementType X) {
+HashTable Rehash(HashTable H) {
+    int OldSize, OldAmount;
+    Cell *OldCells;
+    OldSize = H->TableSize;
+    OldAmount = H->ElementAmount;
+    OldCells = H->TheCells;
+    H = InitializeTable(2 * OldSize);
+    for(int i = 0; i < OldSize; i++) {
+        if(OldCells[i]->Info == Legitimate) {
+            Insert(H, OldCells[i]->element);
+        }
+    }
+    return H;
+}
+
+HashTable Insert(HashTable H, ElementType X) {
     Position Pos;
     Pos = Find(H, X);
     H->TheCells[Pos]->element = X;
     H->TheCells[Pos]->Info = Legitimate;
+    ++H->ElementAmount;
+    if(2 * H->ElementAmount > H->TableSize) {
+        H = Rehash(H);
+    }
+    return H;
 }
+
 
 void PrintTable(HashTable H) {
     for(int i = 0; i < H->TableSize; i++) {
@@ -66,10 +96,16 @@ void PrintTable(HashTable H) {
 }
 
 void test(HashTable H) {
-    int array[5] = {89, 18, 49, 58, 69};
+    int array1[5] = {89, 18, 49, 58, 69};
     for(int i = 0; i < 5; i++) {
-        Insert(H, array[i]);
+        H = Insert(H, array1[i]);
     }
+    PrintTable(H);
+    int array2[5] = {10, 20, 30, 40, 50};
+    for(int i = 0; i < 5; i++) {
+        H = Insert(H, array2[i]);
+    }
+    printf("\nAfter Rehash: \n");
     PrintTable(H);
 }
 
@@ -81,4 +117,3 @@ int main()
     test(H);
     return 0;
 }
-
