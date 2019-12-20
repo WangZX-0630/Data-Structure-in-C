@@ -1,0 +1,188 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct TreeNode;
+typedef struct TreeNode *LHeap;
+typedef int ElementType;
+
+ElementType FindMin(LHeap H);
+int IsEmpty(LHeap H);
+LHeap Insert(ElementType X, LHeap H);
+LHeap DeleteMin(LHeap H);
+LHeap Merge1(LHeap H1, LHeap H2);
+LHeap Merge(LHeap H1, LHeap H2);
+
+
+struct TreeNode {
+    ElementType Element;
+    LHeap Left;
+    LHeap Right;
+    int NPL;
+};
+
+typedef struct QueueNode *QNode;
+struct QueueNode {
+    LHeap element;
+    QNode next;
+};
+
+typedef struct QueueList {
+    QNode head;
+    QNode rear;
+} *Queue;
+
+int IsEmpty(LHeap H) {
+    return H->Element == 0;
+}
+
+Queue InitializeQueue(void) {
+    Queue Q;
+    Q = malloc(sizeof(struct QueueList));
+    Q->head = malloc(sizeof(struct QueueNode));
+    Q->rear = malloc(sizeof(struct QueueNode));
+    Q->head->next = Q->rear->next = NULL;
+    return Q;
+}
+
+int IsEmptyQ(Queue Q) {
+    return Q->head->next == NULL;
+}
+
+Queue EnQueue(LHeap X, Queue Q) {
+    QNode TmpCell;
+    TmpCell = malloc(sizeof(struct QueueNode));
+    TmpCell->element = X;
+    TmpCell->next = NULL;
+    if(IsEmptyQ(Q)) {
+        Q->head->next = Q->rear->next = TmpCell;
+    }
+    else {
+        Q->rear->next->next = TmpCell;
+        Q->rear->next = TmpCell;
+    }
+    return Q;
+}
+
+LHeap DeQueue(Queue Q) {
+    if(IsEmptyQ(Q)) {
+        return 0;
+    }
+    else {
+        QNode TmpCell;
+        TmpCell = Q->head->next;
+        LHeap Value = TmpCell->element;
+        if(Q->head->next->next == NULL) {
+            Q->head->next = Q->rear->next = NULL;
+        }
+        else {
+            Q->head->next = TmpCell->next;
+        }
+        free(TmpCell);
+        return Value;
+    }
+}
+
+LHeap InitializeLHeap(void) {
+    LHeap H;
+    H = NULL;
+    return H;
+}
+
+void SwapChildren(LHeap H) {
+    LHeap TmpCell;
+    TmpCell = H->Left;
+    H->Left = H->Right;
+    H->Right = TmpCell;
+}
+
+LHeap Merge(LHeap H1, LHeap H2) {
+    if(H1 == NULL) {
+        return H2;
+    }
+    if(H2 == NULL) {
+        return H1;
+    }
+    if(H1->Element < H2->Element) {
+        return Merge1(H1, H2);
+    }
+    else {
+        return Merge1(H2, H1);
+    }
+}
+
+LHeap Merge1(LHeap H1, LHeap H2) {
+    if(H1->Left == NULL) {
+        H1->Left = H2;
+    }
+    else {
+        H1->Right = Merge(H1->Right, H2);
+        if(H1->Left->NPL < H1->Right->NPL) {
+            SwapChildren(H1);
+        }
+        H1->NPL = H1->Right->NPL + 1;
+    }
+    return H1;
+}
+
+LHeap Insert(ElementType X, LHeap H) {
+    LHeap TmpCell;
+    TmpCell = malloc(sizeof(struct TreeNode));
+    TmpCell->Element = X;
+    TmpCell->NPL = 0;
+    TmpCell->Left =TmpCell->Right = NULL;
+    H = Merge(H, TmpCell);
+    return H;
+}
+
+LHeap DeleteMin(LHeap H) {
+    if(!IsEmpty(H)) {
+        LHeap left = H->Left;
+        LHeap right = H->Right;
+        free(H);
+        LHeap NewH = Merge(left, right);
+        return NewH;
+    }
+    else {
+        return H;
+    }
+}
+
+void PrintHeap(LHeap H) {
+    if(H != NULL) {
+        Queue Q;
+        Q = InitializeQueue();
+        EnQueue(H, Q);
+        while(!IsEmptyQ(Q)) {
+            LHeap TmpCell = DeQueue(Q);
+            printf("%d,",TmpCell->Element);
+            if(TmpCell->Left != NULL) {
+                EnQueue(TmpCell->Left, Q);
+            }
+            if(TmpCell->Right != NULL) {
+                EnQueue(TmpCell->Right, Q);
+            }
+        }
+        printf("\n");
+    }
+}
+
+void test(LHeap H) {
+    int array[15];
+    for(int i = 0; i < 15; ++i) {
+        array[i] = i + 1;
+        H = Insert(array[i], H);
+    }
+    PrintHeap(H);
+    for(int i = 0; i < 5; ++i) {
+        H = DeleteMin(H);
+    }
+    PrintHeap(H);
+}
+
+int main()
+{
+    LHeap H;
+    H = InitializeLHeap();
+    test(H);
+    return 0;
+}
