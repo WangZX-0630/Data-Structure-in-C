@@ -22,7 +22,7 @@ void test(int array[], int N) {
 
 int main()
 {
-    int N = 100000;
+    int N = 1000000;
     int array[N];
     clock_t start, finish;
     srand((unsigned)time(NULL));
@@ -36,4 +36,4 @@ int main()
     
     return 0;
 }
-/* On my computer, it cost about 4.85s to sort 100000 number with BubbleSort */
+/* On my computer, it cost about 8min20s(500s) to sort 100w numbers with BubbleSort */
