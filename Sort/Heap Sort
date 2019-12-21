@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define LeftChild(i) (2 * (i) + 1)
+
+void PercolateDown(int A[], int i, int N) {
+    int Child;
+    int Tmp;
+    for(Tmp = A[i]; LeftChild(i) < N; i = Child) {
+        Child = LeftChild(i);
+        if(Child + 1 <= N - 1 && A[Child + 1] > A[Child]) {
+            ++Child;
+        }
+        if(A[Child] > Tmp) {
+            A[i] = A[Child];
+        }
+        else break;
+    }
+    A[i] = Tmp;
+}
+
+
+void Swap(int *a, int *b) {
+    int tmp;
+    tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+void HeapSort(int A[], int N) {
+    for(int i = N / 2; i >= 0; --i) {
+        PercolateDown(A, i, N);
+    }
+    for(int i = N - 1; i > 0; --i) {
+        Swap(&A[i], &A[0]);
+        PercolateDown(A, 0, i);
+    }
+}
+
+void AddRandNum(int array[], int N) {
+    srand((unsigned)time(NULL));
+    for(int i = 0; i < N; ++i) {
+        array[i] = rand() % (10 * N);
+    }
+}
+
+void test(int array[], int N) {
+    HeapSort(array, N);
+    /*for(int i = 0; i < N; ++i) {
+        printf("%d,",array[i]);
+    }*/
+}
+
+int main()
+{
+    int N = 1000000;
+    int array[N];
+    AddRandNum(array, N);
+    clock_t start, finish;
+    start = clock();
+    test(array, N);
+    finish = clock();
+    printf("\nProcessing time: %1f ms\n",(double)(finish - start) / 1000);
+    return 0;
+}
+
+/* On my computer, it costs about 0.19s to sort 100w numbers with HeapSort */
+/* Heap Sort:
+        Space Complexity: O(1)
+        Time Complexity: O(n * logn)
+        Stability: unstable
+*/
