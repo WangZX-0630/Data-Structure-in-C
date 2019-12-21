@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+void Swap(int *a, int *b) {
+    int tmp;
+    tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+void BubbleSort(int A[], int N) {
+    for(int i = 0; i < N - 1; ++i) {
+        for(int j = 0; j < N - i - 1; ++j) {
+            if(A[j] > A[j + 1]) {
+                Swap(&A[j], &A[j + 1]);
+            }
+        }
+    }
+}
+
+void test(int array[], int N) {
+    BubbleSort(array, N);
+}
+
+
+int main()
+{
+    clock_t start, finish;
+    int array[100000];
+    srand((unsigned)time(NULL));
+    for(int i = 0; i < 100000; ++i) {
+        int num = rand()%1000000;
+        array[i] = num;
+    }
+    start = clock();
+    test(array, 100000);
+    finish = clock();
+    printf("\nProcessing time: %1f ms\n",(double)(finish - start)/1000);
+    return 0;
+}
+
+/*On my computer, it cost about 25.6s to sort 100000 number with BubbleSort*/
