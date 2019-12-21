@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define SelfAdd(i) ++i
+#define SelfSub(i) --i
+
+int MaxBit(int A[], int N) {
+    int MaxElem = A[0];
+    for(int i = 1; i < N; SelfAdd(i)) {
+        if(A[i] > MaxElem) {
+            MaxElem = A[i];
+        }
+    }
+    int Maxbit = 0;
+    while(MaxElem >= 10) {
+        MaxElem /= 10;
+        SelfAdd(Maxbit);
+    }
+    return Maxbit;
+}
+
+void RadixSort(int A[], int N) {
+    int Bit = MaxBit(A, N);
+    int Tmp[N];
+    int Count[10];
+    int Radix = 1;
+    for(int i = 0; i <= Bit; SelfAdd(i)) {
+        for(int j = 0; j < 10; SelfAdd(j)) {
+            Count[j] = 0;
+        }
+        for(int j = 0, k = 0; j < N; SelfAdd(j)) {
+            k = (A[j] / Radix) % 10;
+            SelfAdd(Count[k]);
+        }
+        for(int j = 1; j < 10; SelfAdd(j)) {
+            Count[j] = Count[j - 1] + Count[j];
+        }
+        for(int j = N - 1, k = 0; j >= 0; SelfSub(j)) {
+            k = (A[j] / Radix) % 10;
+            Tmp[Count[k] - 1] = A[j];
+            SelfSub(Count[k]);
+        }
+        for(int j = 0; j < N; SelfAdd(j)) {
+            A[j] = Tmp[j];
+        }
+        Radix *= 10;
+    }
+}
+
+void AddRandNum(int array[], int N) {
+    srand((unsigned)time(NULL));
+    for(int i = 0; i < N; ++i) {
+        array[i] = rand() % (10 * N);
+    }
+}
+
+void test(int array[], int N) {
+    RadixSort(array, N);
+    /*for(int i = 0; i < N; ++i) {
+        printf("%d,",array[i]);
+    }*/
+}
+
+int main()
+{
+    int N = 1000000;
+    int array[N];
+    AddRandNum(array, N);
+    clock_t start, finish;
+    start = clock();
+    test(array, N);
+    finish = clock();
+    printf("\nProcessing time: %1f ms\n",(double)(finish - start) / 1000);
+    return 0;
+}
+
+/* On my computer, it costs about 0.08s to sort 100w numbers with RadixSort */
+/* Radix Sort:
+        Space Complexity: O(n + k)
+        Time Complexity: O(n * k)
+        Stability: stable
+*/
