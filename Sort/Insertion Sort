@@ -36,4 +36,4 @@ int main()
     
     return 0;
 }
-/* On my computer, it cost about 8min20s(500s) to sort 100w numbers with BubbleSort */
+/* On my computer, it cost about 8min20s(500s) to sort 100w numbers with InsertionSort */
