@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+void MergeSort(int A[], int N);
+void MSort(int A[], int TmpArray[], int Left, int Right);
+void Merge(int A[], int TmpArray[], int LPos, int RPos, int REnd);
+
+void MergeSort(int A[], int N) {
+    int *TmpArray;
+    TmpArray = malloc(sizeof(int) * N);
+    MSort(A, TmpArray, 0, N - 1);
+    free(TmpArray);
+}
+
+void MSort(int A[], int TmpArray[], int Left, int Right) {
+    int Center;
+    if(Left < Right) {
+        Center = (Left + Right) / 2;
+        MSort(A, TmpArray, Left, Center);
+        MSort(A, TmpArray, Center + 1, Right);
+        Merge(A, TmpArray, Left, Center + 1, Right);
+    }
+}
+
+void Merge(int A[], int TmpArray[], int LPos, int RPos, int REnd) {
+    int LEnd = RPos - 1;
+    int TmpPos = LPos;
+    int EleNum = REnd - LPos + 1;
+    while(LPos <= LEnd && RPos <= REnd) {
+        if(A[LPos] < A[RPos]) {
+            TmpArray[TmpPos++] = A[LPos++];
+        }
+        else {
+            TmpArray[TmpPos++] = A[RPos++];
+        }
+    }
+    while(LPos <= LEnd) {
+        TmpArray[TmpPos++] = A[LPos++];
+    }
+    while(RPos <= REnd) {
+        TmpArray[TmpPos++] = A[RPos++];
+    }
+    for(int i = 0; i < EleNum; ++i, --REnd) {
+        A[REnd] = TmpArray[REnd];
+    }
+}
+
+void AddRandNum(int array[], int N) {
+    srand((unsigned)time(NULL));
+    for(int i = 0; i < N; ++i) {
+        array[i] = rand() % (10 * N);
+    }
+}
+
+void test(int array[], int N) {
+    MergeSort(array, N);
+    /*for(int i = 0; i < N; ++i) {
+        printf("%d,",array[i]);
+    }*/
+}
+
+int main()
+{
+    int N = 1000000;
+    int array[N];
+    AddRandNum(array, N);
+    clock_t start, finish;
+    start = clock();
+    test(array, N);
+    finish = clock();
+    printf("\nProcessing time: %1f ms\n",(double)(finish - start) / 1000);
+    return 0;
+}
+
+/* On my computer, it costs about 0.17s to sort 100w numbers with MergeSort */
+/* Merge Sort:
+        Space Complexity: O(n)
+        Time Complexity: O(n * logn)
+        Stability: stable
+*/
+
