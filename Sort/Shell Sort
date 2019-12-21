@@ -46,3 +46,8 @@ int main()
 }
 
 /* On my computer, it costs about 0.3s to sort 100w numbers with ShellSort */
+/* Shell Sort:
+         Space Complexity: O(1)
+         Time Complexity: O(n * log(n))
+         Stability: unstable
+*/
