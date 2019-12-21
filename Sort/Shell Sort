@@ -45,4 +45,4 @@ int main()
     return 0;
 }
 
-/* On my computer, it costs about 0.3s to sort 100w numbers with BubbleSort */
+/* On my computer, it costs about 0.3s to sort 100w numbers with ShellSort */
