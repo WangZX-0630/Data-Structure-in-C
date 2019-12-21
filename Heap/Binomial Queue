@@ -1,0 +1,234 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#define MaxTrees 10
+
+typedef struct BinNode *Position;
+typedef struct BinNode *BinTree;
+typedef struct Collection *BinQueue;
+typedef int ElementType;
+
+struct BinNode {
+    ElementType Element;
+    Position LeftChild;
+    Position NextSibling;
+};
+
+struct Collection {
+    int CurrentSize;
+    BinTree TheTrees[MaxTrees];
+};
+
+
+typedef struct QueueNode *QNode;
+struct QueueNode {
+    BinTree element;
+    QNode next;
+};
+
+typedef struct QueueList {
+    QNode head;
+    QNode rear;
+} *Queue;
+
+Queue InitializeQueue(void) {
+    Queue Q;
+    Q = malloc(sizeof(struct QueueList));
+    Q->head = malloc(sizeof(struct QueueNode));
+    Q->rear = malloc(sizeof(struct QueueNode));
+    Q->head->next = Q->rear->next = NULL;
+    return Q;
+}
+
+int IsEmptyQ(Queue Q) {
+    return Q->head->next == NULL;
+}
+
+Queue EnQueue(BinTree X, Queue Q) {
+    QNode TmpCell;
+    TmpCell = malloc(sizeof(struct QueueNode));
+    TmpCell->element = X;
+    TmpCell->next = NULL;
+    if(IsEmptyQ(Q)) {
+        Q->head->next = Q->rear->next = TmpCell;
+    }
+    else {
+        Q->rear->next->next = TmpCell;
+        Q->rear->next = TmpCell;
+    }
+    return Q;
+}
+
+BinTree DeQueue(Queue Q) {
+    if(IsEmptyQ(Q)) {
+        return 0;
+    }
+    else {
+        QNode TmpCell;
+        TmpCell = Q->head->next;
+        BinTree Value = TmpCell->element;
+        if(Q->head->next->next == NULL) {
+            Q->head->next = Q->rear->next = NULL;
+        }
+        else {
+            Q->head->next = TmpCell->next;
+        }
+        free(TmpCell);
+        return Value;
+    }
+}
+
+
+BinQueue Initialize() {
+    BinQueue H;
+    H = malloc(sizeof(struct Collection));
+    H->CurrentSize = 0;
+    for(int i = 0; i < MaxTrees; ++i) {
+        H->TheTrees[i] = NULL;
+    }
+    return H;
+}
+
+BinTree Combine(BinTree T1, BinTree T2) {
+    if(T1->Element > T2->Element) {
+        return Combine(T2, T1);
+    }
+    else {
+        T2->NextSibling = T1->LeftChild;
+        T1->LeftChild = T2;
+        return T1;
+    }
+}
+
+BinQueue Merge(BinQueue H1, BinQueue H2) {
+    BinTree T1, T2, Carry = NULL;
+    int NewSize = H1->CurrentSize + H2->CurrentSize;
+    int i = 0;
+    while(H1->CurrentSize != NewSize) {
+        T1 = H1->TheTrees[i];
+        T2 = H2->TheTrees[i];
+        switch(!!T1 + !!T2 * 2 + !!Carry * 4) {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                H1->TheTrees[i] = T2;
+                H2->TheTrees[i] = NULL;
+                H1->CurrentSize += pow(2, i);
+                break;
+            case 3:
+                Carry = Combine(T1, T2);
+                H1->TheTrees[i] = NULL;
+                H2->TheTrees[i] = NULL;
+                H1->CurrentSize -= pow(2, i - 1);
+                break;
+            case 4:
+                H1->TheTrees[i] = Carry;
+                H1->CurrentSize += pow(2, i);
+                break;
+            case 5:
+                Carry = Combine(T1, Carry);
+                H1->TheTrees[i] = NULL;
+                H1->CurrentSize -= pow(2, i);
+                break;
+            case 6:
+                Carry = Combine(T2, Carry);
+                H2->TheTrees[i] = NULL;
+                break;
+            case 7:
+                H1->TheTrees[i] = Carry;
+                Carry = Combine(T1, T2);
+                H2->TheTrees[i] = NULL;
+                break;
+        }
+        ++i;
+    }
+    return H1;
+}
+
+BinQueue Insert(ElementType X, BinQueue H) {
+    BinQueue TmpQueue;
+    TmpQueue = Initialize();
+    TmpQueue->TheTrees[0] = malloc(sizeof(struct BinNode));
+    TmpQueue->TheTrees[0]->Element = X;
+    TmpQueue->CurrentSize = 1;
+    TmpQueue->TheTrees[0]->LeftChild = NULL;
+    TmpQueue->TheTrees[0]->NextSibling = NULL;
+    H = Merge(H, TmpQueue);
+    return H;
+}
+
+ElementType DeleteMin(BinQueue H) {
+    BinTree MinTree;
+    int MinIndex;
+    int j = 0;
+    while(H->TheTrees[j++] == NULL) {}
+    MinTree = H->TheTrees[j];
+    MinIndex = j;
+    for(int i = 0; i < H->CurrentSize; ++i) {
+        if(H->TheTrees[i] != NULL) {
+            if(H->TheTrees[i] < MinTree) {
+                MinTree = H->TheTrees[i];
+                MinIndex = i;
+            }
+        }
+    }
+    int MinValue = MinTree->Element;
+    H->TheTrees[MinIndex] = NULL;
+    BinTree Child = MinTree->LeftChild;
+    for(int i = MinIndex - 1; i >= 0; --i) {
+        BinTree TmpCell;
+        TmpCell = Child;
+        Child = Child->NextSibling;
+        TmpCell->NextSibling = NULL;
+        BinQueue TmpQueue;
+        TmpQueue = Initialize();
+        TmpQueue->TheTrees[i] = TmpCell;
+        H = Merge(H, TmpQueue);
+    }
+    return MinValue;
+}
+
+void LevelOrderPrint(BinTree T) {
+    if(T) {
+        Queue Q;
+        Q = InitializeQueue();
+        Q = EnQueue(T, Q);
+        BinTree Child, TmpTree;
+        while(!IsEmptyQ(Q)) {
+            TmpTree = DeQueue(Q);
+            printf("%d,",TmpTree->Element);
+            Child = TmpTree->LeftChild;
+            while(Child) {
+                Q = EnQueue(Child, Q);
+                Child = Child->NextSibling;
+            }
+        }
+    }
+}
+
+void PrintBinQueue(BinQueue H) {
+    for(int i = 0; i < MaxTrees; ++i) {
+        printf("%d: ",i);
+        LevelOrderPrint(H->TheTrees[i]);
+        printf("\n");
+    }
+}
+
+void test(BinQueue H) {
+    int array[20];
+    for(int i = 0; i < 20; ++i) {
+        array[i] = i + 1;
+        H = Insert(array[i], H);
+    }
+    PrintBinQueue(H);
+}
+
+int main()
+{
+    BinQueue H;
+    H = Initialize();
+    test(H);
+    return 0;
+}
